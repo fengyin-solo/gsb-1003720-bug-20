@@ -35,3 +35,11 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .error-text { color: #b42318; }
 .status-legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 10px; font-size: 12px; color: var(--muted); }
 .legend-item { background: #eef2f7; border-radius: 999px; padding: 2px 10px; }
+.snapshot-box { margin-top: 16px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.snapshot-box h3 { margin: 0 0 4px; font-size: 14px; }
+.snapshot-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.snapshot-list li { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+.snapshot-reason { color: #475569; }
+.snapshot-active { font-weight: 700; text-decoration: underline; }
+.snapshot-ok { color: #177245; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }

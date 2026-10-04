@@ -77,15 +77,16 @@ import {
   downloadEntries,
   listEntries,
   moduleMeta,
+  moduleSummary,
   runAction as applyAction,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('warning')
 const columns = ["配置编号", "站点编号", "监测类型", "蓝色阈值", "黄色阈值", "橙色阈值", "红色阈值", "生效状态"]
-const actions = ["发布生效", "调整阈值", "停用配置"]
-const statuses = ["草稿", "已生效", "已调整", "已停用"]
-const stats = [{"label": "配置总数", "value": 0}, {"label": "已生效数", "value": 0}, {"label": "本月调整数", "value": 0}]
+const actions = meta.actions
+const statuses = meta.statuses
+const stats = ref<{ label: string; value: number }[]>([])
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
@@ -112,14 +113,14 @@ function openCreate() {
   errorMessage.value = '预警阈值配置登记入口尚未接入审批流'
 }
 
-function runAction(action: string, row: EntryRow) {
+async function runAction(action: string, row: EntryRow) {
   errorMessage.value = ''
-  const result = applyAction(meta.key, Number(row.id), action)
+  const result = await applyAction(meta.key, Number(row.id), action)
+  // 无论成功、去重还是版本冲突，都以落库后的获胜版本为准刷新。
+  reload()
   if (!result.ok) {
     errorMessage.value = result.message
-    return
   }
-  reload()
 }
 
 function reload() {
@@ -128,6 +129,12 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    const summary = moduleSummary(meta.key)
+    stats.value = [
+      { label: '登记总量', value: summary.created },
+      { label: '待处理', value: summary.pending },
+      { label: '异常量', value: summary.abnormal },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '预警阈值列表读取失败'
   }

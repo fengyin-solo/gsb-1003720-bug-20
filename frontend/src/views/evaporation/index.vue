@@ -77,15 +77,16 @@ import {
   downloadEntries,
   listEntries,
   moduleMeta,
+  moduleSummary,
   runAction as applyAction,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('evaporation')
 const columns = ["记录编号", "站点编号", "观测日期", "蒸发量", "水温", "气温", "风速", "记录状态"]
-const actions = ["提交审核", "确认通过", "标记异常"]
-const statuses = ["已采集", "待审核", "已通过", "异常值"]
-const stats = [{"label": "今日观测站次", "value": 0}, {"label": "待审核记录", "value": 0}, {"label": "异常记录数", "value": 0}]
+const actions = meta.actions
+const statuses = meta.statuses
+const stats = ref<{ label: string; value: number }[]>([])
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
@@ -112,14 +113,14 @@ function openCreate() {
   errorMessage.value = '蒸发观测记录登记入口尚未接入审批流'
 }
 
-function runAction(action: string, row: EntryRow) {
+async function runAction(action: string, row: EntryRow) {
   errorMessage.value = ''
-  const result = applyAction(meta.key, Number(row.id), action)
+  const result = await applyAction(meta.key, Number(row.id), action)
+  // 无论成功、去重还是版本冲突，都以落库后的获胜版本为准刷新。
+  reload()
   if (!result.ok) {
     errorMessage.value = result.message
-    return
   }
-  reload()
 }
 
 function reload() {
@@ -128,6 +129,12 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    const summary = moduleSummary(meta.key)
+    stats.value = [
+      { label: '登记总量', value: summary.created },
+      { label: '待处理', value: summary.pending },
+      { label: '异常量', value: summary.abnormal },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '蒸发观测列表读取失败'
   }
