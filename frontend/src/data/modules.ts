@@ -1,6 +1,8 @@
 import type { ModuleMeta } from './types'
 
 // 模块元数据由仓库生成时写入：字段、状态、动作、流转目标都在这里，页面不再各自写一遍。
+// 统计口径（done/inactive/abnormalStatuses/metrics）也集中在此：概览与各模块页面共用一份，
+// 行上残留的 pending/abnormal 旧标记不再作为依据，统一由状态派生。
 export const MODULES: ModuleMeta[] = [
   {
     key: "station",
@@ -11,7 +13,15 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["正常运行", "设备故障", "汛期加强", "暂停运行", "已撤销"],
     actions: ["升级为加强", "登记故障", "撤销站点"],
     actionTargets: {"升级为加强": "汛期加强", "登记故障": "设备故障", "撤销站点": "已撤销"},
-    metrics: ["站点总数", "正常运行数", "故障站点数"],
+    done: ["汛期加强"],
+    inactive: ["已撤销"],
+    abnormalStatuses: ["设备故障"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "站点总数", kind: "total" },
+      { label: "正常运行数", kind: "status", status: "正常运行" },
+      { label: "故障站点数", kind: "abnormal" },
+    ],
   },
   {
     key: "waterlevel",
@@ -22,7 +32,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采集", "待审核", "已通过", "异常值"],
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
-    metrics: ["今日采集数", "超警戒站次", "待审核记录"],
+    done: ["已通过"],
+    abnormalStatuses: ["异常值"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "今日采集数", kind: "total" },
+      { label: "超警戒站次", kind: "abnormal" },
+      { label: "待审核记录", kind: "pending" },
+    ],
   },
   {
     key: "discharge",
@@ -33,7 +50,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采集", "待审核", "已通过", "异常值"],
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
-    metrics: ["今日测量次数", "待审核记录", "异常记录数"],
+    done: ["已通过"],
+    abnormalStatuses: ["异常值"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "今日测量次数", kind: "total" },
+      { label: "待审核记录", kind: "pending" },
+      { label: "异常记录数", kind: "abnormal" },
+    ],
   },
   {
     key: "rainfall",
@@ -44,7 +68,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采集", "待审核", "已通过", "异常值"],
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
-    metrics: ["今日观测站次", "暴雨站点数", "待审核记录"],
+    done: ["已通过"],
+    abnormalStatuses: ["异常值"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "今日观测站次", kind: "total" },
+      { label: "暴雨站点数", kind: "abnormal" },
+      { label: "待审核记录", kind: "pending" },
+    ],
   },
   {
     key: "waterquality",
@@ -55,7 +86,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采样", "检测中", "已出报告", "超标", "已复核"],
     actions: ["开始检测", "出具报告", "发起复核"],
     actionTargets: {"开始检测": "检测中", "出具报告": "已出报告", "发起复核": "已复核"},
-    metrics: ["本月检测次数", "超标报告数", "检测中样本"],
+    done: ["已出报告", "已复核"],
+    abnormalStatuses: ["超标"],
+    stationField: "采样站点",
+    metrics: [
+      { label: "本月检测次数", kind: "total" },
+      { label: "超标报告数", kind: "abnormal" },
+      { label: "检测中样本", kind: "pending" },
+    ],
   },
   {
     key: "crosssection",
@@ -66,7 +104,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已测量", "待校核", "已校核", "需重测"],
     actions: ["提交校核", "确认校核", "安排重测"],
     actionTargets: {"提交校核": "待校核", "确认校核": "已校核", "安排重测": "需重测"},
-    metrics: ["本月测量次数", "待校核记录", "需重测记录"],
+    done: ["已校核"],
+    abnormalStatuses: ["需重测"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "本月测量次数", kind: "total" },
+      { label: "待校核记录", kind: "pending" },
+      { label: "需重测记录", kind: "abnormal" },
+    ],
   },
   {
     key: "telemetry",
@@ -77,7 +122,15 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["正常运行", "信号异常", "低电量", "待维修", "已停用"],
     actions: ["报修设备", "确认修复", "停用设备"],
     actionTargets: {"报修设备": "待维修", "确认修复": "正常运行", "停用设备": "已停用"},
-    metrics: ["设备总数", "正常运行数", "待维修数"],
+    done: ["正常运行", "低电量"],
+    inactive: ["已停用"],
+    abnormalStatuses: ["信号异常", "待维修"],
+    stationField: "所属站点",
+    metrics: [
+      { label: "设备总数", kind: "total" },
+      { label: "正常运行数", kind: "status", status: "正常运行" },
+      { label: "待维修数", kind: "status", status: "待维修" },
+    ],
   },
   {
     key: "compilation",
@@ -88,7 +141,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["待整编", "整编中", "待审核", "已刊印", "已驳回"],
     actions: ["开始整编", "提交审核", "驳回整编"],
     actionTargets: {"开始整编": "整编中", "提交审核": "待审核", "驳回整编": "已驳回"},
-    metrics: ["待整编年度", "整编中年度", "已刊印成果"],
+    done: ["已刊印", "已驳回"],
+    abnormalStatuses: ["已驳回"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "待整编年度", kind: "status", status: "待整编" },
+      { label: "整编中年度", kind: "status", status: "整编中" },
+      { label: "已刊印成果", kind: "status", status: "已刊印" },
+    ],
   },
   {
     key: "warning",
@@ -99,7 +159,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["草稿", "已生效", "已调整", "已停用"],
     actions: ["发布生效", "调整阈值", "停用配置"],
     actionTargets: {"发布生效": "已生效", "调整阈值": "已调整", "停用配置": "已停用"},
-    metrics: ["配置总数", "已生效数", "本月调整数"],
+    done: ["已生效", "已调整"],
+    inactive: ["已停用"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "配置总数", kind: "total" },
+      { label: "已生效数", kind: "status", status: "已生效" },
+      { label: "本月调整数", kind: "status", status: "已调整" },
+    ],
   },
   {
     key: "groundwater",
@@ -110,7 +177,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采集", "待审核", "已通过", "异常值"],
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
-    metrics: ["今日观测井次", "待审核记录", "异常记录数"],
+    done: ["已通过"],
+    abnormalStatuses: ["异常值"],
+    stationField: "井点编号",
+    metrics: [
+      { label: "今日观测井次", kind: "total" },
+      { label: "待审核记录", kind: "pending" },
+      { label: "异常记录数", kind: "abnormal" },
+    ],
   },
   {
     key: "evaporation",
@@ -121,7 +195,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采集", "待审核", "已通过", "异常值"],
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
-    metrics: ["今日观测站次", "待审核记录", "异常记录数"],
+    done: ["已通过"],
+    abnormalStatuses: ["异常值"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "今日观测站次", kind: "total" },
+      { label: "待审核记录", kind: "pending" },
+      { label: "异常记录数", kind: "abnormal" },
+    ],
   },
   {
     key: "cableway",
@@ -132,7 +213,15 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["正常运行", "需检修", "检修中", "已停用"],
     actions: ["安排检修", "完成检修", "停用缆道"],
     actionTargets: {"安排检修": "需检修", "完成检修": "正常运行", "停用缆道": "已停用"},
-    metrics: ["缆道总数", "正常运行数", "需检修数"],
+    done: ["正常运行", "检修中"],
+    inactive: ["已停用"],
+    abnormalStatuses: ["需检修"],
+    stationField: "所属站点",
+    metrics: [
+      { label: "缆道总数", kind: "total" },
+      { label: "正常运行数", kind: "status", status: "正常运行" },
+      { label: "需检修数", kind: "abnormal" },
+    ],
   },
   {
     key: "sediment",
@@ -143,7 +232,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["已采集", "待审核", "已通过", "异常值"],
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
-    metrics: ["本月采样次数", "待审核记录", "异常记录数"],
+    done: ["已通过"],
+    abnormalStatuses: ["异常值"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "本月采样次数", kind: "total" },
+      { label: "待审核记录", kind: "pending" },
+      { label: "异常记录数", kind: "abnormal" },
+    ],
   },
   {
     key: "communication",
@@ -154,7 +250,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["通讯正常", "信号弱", "通讯中断", "待更换"],
     actions: ["登记故障", "确认恢复", "申请更换"],
     actionTargets: {"登记故障": "通讯中断", "确认恢复": "通讯正常", "申请更换": "待更换"},
-    metrics: ["设备总数", "通讯正常数", "中断设备数"],
+    done: ["通讯正常", "待更换"],
+    abnormalStatuses: ["信号弱", "通讯中断"],
+    stationField: "所属站点",
+    metrics: [
+      { label: "设备总数", kind: "total" },
+      { label: "通讯正常数", kind: "status", status: "通讯正常" },
+      { label: "中断设备数", kind: "abnormal" },
+    ],
   },
   {
     key: "stationhouse",
@@ -165,7 +268,13 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["待安排", "已安排", "施工中", "已完成", "已验收"],
     actions: ["安排维护", "确认完工", "通过验收"],
     actionTargets: {"安排维护": "已安排", "确认完工": "已完成", "通过验收": "已验收"},
-    metrics: ["待维护项数", "施工中项数", "本月已验收"],
+    done: ["已完成", "已验收"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "待维护项数", kind: "pending" },
+      { label: "施工中项数", kind: "status", status: "施工中" },
+      { label: "本月已验收", kind: "status", status: "已验收" },
+    ],
   },
   {
     key: "calibration",
@@ -176,7 +285,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["待送检", "送检中", "已合格", "不合格", "已停用"],
     actions: ["送出检定", "确认合格", "标记不合格"],
     actionTargets: {"送出检定": "送检中", "确认合格": "已合格", "标记不合格": "不合格"},
-    metrics: ["待送检仪器", "已合格仪器", "不合格仪器"],
+    done: ["已合格"],
+    inactive: ["已停用"],
+    abnormalStatuses: ["不合格"],
+    metrics: [
+      { label: "待送检仪器", kind: "status", status: "待送检" },
+      { label: "已合格仪器", kind: "status", status: "已合格" },
+      { label: "不合格仪器", kind: "abnormal" },
+    ],
   },
   {
     key: "inspection",
@@ -187,7 +303,14 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["待巡检", "已巡检", "发现故障", "已处置"],
     actions: ["完成巡检", "报告故障", "确认处置"],
     actionTargets: {"完成巡检": "已巡检", "报告故障": "发现故障", "确认处置": "已处置"},
-    metrics: ["本月巡检次数", "已巡检站点", "待处置故障"],
+    done: ["已巡检", "已处置"],
+    abnormalStatuses: ["发现故障"],
+    stationField: "站点编号",
+    metrics: [
+      { label: "本月巡检次数", kind: "total" },
+      { label: "已巡检站点", kind: "pending" },
+      { label: "待处置故障", kind: "abnormal" },
+    ],
   },
   {
     key: "plan",
@@ -198,7 +321,13 @@ export const MODULES: ModuleMeta[] = [
     statuses: ["编制中", "待审批", "已批准", "已修订", "已废止"],
     actions: ["提交审批", "批准方案", "废止方案"],
     actionTargets: {"提交审批": "待审批", "批准方案": "已批准", "废止方案": "已废止"},
-    metrics: ["方案总数", "已批准方案", "待审批方案"],
+    done: ["已批准", "已修订"],
+    inactive: ["已废止"],
+    metrics: [
+      { label: "方案总数", kind: "total" },
+      { label: "已批准方案", kind: "status", status: "已批准" },
+      { label: "待审批方案", kind: "status", status: "待审批" },
+    ],
   },
 ]
 

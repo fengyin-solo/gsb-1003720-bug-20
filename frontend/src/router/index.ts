@@ -1,47 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from '@/views/Dashboard.vue'
-const Station = () => import('@/views/station/index.vue')
-const Waterlevel = () => import('@/views/waterlevel/index.vue')
-const Discharge = () => import('@/views/discharge/index.vue')
-const Rainfall = () => import('@/views/rainfall/index.vue')
-const Waterquality = () => import('@/views/waterquality/index.vue')
-const Crosssection = () => import('@/views/crosssection/index.vue')
-const Telemetry = () => import('@/views/telemetry/index.vue')
-const Compilation = () => import('@/views/compilation/index.vue')
-const Warning = () => import('@/views/warning/index.vue')
-const Groundwater = () => import('@/views/groundwater/index.vue')
-const Evaporation = () => import('@/views/evaporation/index.vue')
-const Cableway = () => import('@/views/cableway/index.vue')
-const Sediment = () => import('@/views/sediment/index.vue')
-const Communication = () => import('@/views/communication/index.vue')
-const Stationhouse = () => import('@/views/stationhouse/index.vue')
-const Calibration = () => import('@/views/calibration/index.vue')
-const Inspection = () => import('@/views/inspection/index.vue')
-const Plan = () => import('@/views/plan/index.vue')
+import ModulePage from '@/views/ModulePage.vue'
+import { MODULES } from '@/data/modules'
+
+// 业务模块页面结构一致，统一由 ModulePage 按路由 meta.moduleKey 渲染，
+// 统计口径、停用联动与刷新行为在各页面保持同一份实现。
+const moduleRoutes = MODULES.map((meta) => ({
+  path: `/${meta.key}`,
+  name: meta.key,
+  component: ModulePage,
+  meta: { moduleKey: meta.key },
+}))
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'dashboard', component: Dashboard },
-    { path: '/station', name: 'station', component: Station },
-    { path: '/waterlevel', name: 'waterlevel', component: Waterlevel },
-    { path: '/discharge', name: 'discharge', component: Discharge },
-    { path: '/rainfall', name: 'rainfall', component: Rainfall },
-    { path: '/waterquality', name: 'waterquality', component: Waterquality },
-    { path: '/crosssection', name: 'crosssection', component: Crosssection },
-    { path: '/telemetry', name: 'telemetry', component: Telemetry },
-    { path: '/compilation', name: 'compilation', component: Compilation },
-    { path: '/warning', name: 'warning', component: Warning },
-    { path: '/groundwater', name: 'groundwater', component: Groundwater },
-    { path: '/evaporation', name: 'evaporation', component: Evaporation },
-    { path: '/cableway', name: 'cableway', component: Cableway },
-    { path: '/sediment', name: 'sediment', component: Sediment },
-    { path: '/communication', name: 'communication', component: Communication },
-    { path: '/stationhouse', name: 'stationhouse', component: Stationhouse },
-    { path: '/calibration', name: 'calibration', component: Calibration },
-    { path: '/inspection', name: 'inspection', component: Inspection },
-    { path: '/plan', name: 'plan', component: Plan },
+    ...moduleRoutes,
   ],
 })
 

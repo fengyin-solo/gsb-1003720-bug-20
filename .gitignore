@@ -85,3 +85,4 @@ desktop.ini
 *.db
 *.pid
 *.seed
+frontend/scripts/.verify-bundle.mjs
